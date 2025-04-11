@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './App.css';
 
 function App() {
+  const [activeTab, setActiveTab] = useState("text"); // Controls active tab
+
   // For Direct Text Analysis
   const [text, setText] = useState("");
   const [textResult, setTextResult] = useState(null);
@@ -15,12 +17,10 @@ function App() {
   const handleTextSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("https://onsent.xyz/analyze-text", {
+      const response = await fetch("http://localhost:5000/analyze-text", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ text })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
       });
       const data = await response.json();
       setTextResult(data);
@@ -33,7 +33,7 @@ function App() {
   const handleNewsSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`https://onsent.xyz/analyze-news?ticker=${ticker}&date=${date}`);
+      const response = await fetch(`http://localhost:5000/analyze-news?ticker=${ticker}&date=${date}`);
       const data = await response.json();
       setNewsResult(data);
     } catch (error) {
@@ -44,68 +44,79 @@ function App() {
   return (
     <div className="container">
       <h1>Sentiment Analyzer</h1>
-      
-      <section className="section">
-        <h2></h2>
-        <form onSubmit={handleTextSubmit}>
-          <textarea 
-            placeholder="Enter text to analyze sentiment..." 
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows="5"
-            style={{ width: "100%" }}
-          />
-          <br />
-          <button type="submit">Analyze Text</button>
-        </form>
-        {textResult && (
-          <div className="result">
-            <h3>Analysis Result:</h3>
-            <p><strong>Sentiment:</strong> {textResult.label}</p>
-            <p><strong>Score:</strong> {textResult.score}</p>
-          </div>
-        )}
-      </section>
 
-      <hr />
+      {/* Tabs Navigation */}
+      <div className="tabs">
+        <button className={activeTab === "text" ? "active" : ""} onClick={() => setActiveTab("text")}>
+          Text
+        </button>
+        <button className={activeTab === "news" ? "active" : ""} onClick={() => setActiveTab("news")}>
+          News 
+        </button>
+      </div>
 
-      <section className="section">
-        <h2>News Sentiment Analysis by Ticker</h2>
-        <form onSubmit={handleNewsSubmit}>
-          <input 
-            type="text" 
-            placeholder="Enter ticker or keywords" 
-            value={ticker}
-            onChange={(e) => setTicker(e.target.value)}
-            required
-          />
-          <br /><br />
-          <input 
-            type="date" 
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-          <br /><br />
-          <button type="submit">Analyze News</button>
-        </form>
-        {newsResult && (
-          <div className="result">
-            <h3>Overall Sentiment: {newsResult.overall_sentiment}</h3>
-            <p><strong>Total Score:</strong> {newsResult.total_score}</p>
-            <h4>Articles:</h4>
-            <ul>
-              {newsResult.articles && newsResult.articles.map((article, index) => (
-                <li key={index}>
-                  <a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
-                  <br />
-                  <span>Sentiment: {article.sentiment} {article.score ? `(Score: ${article.score})` : ""}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
+      {/* Tab Content */}
+      {activeTab === "text" ? (
+        <section className="section">
+          <h2>Analyze Text </h2>
+          <form onSubmit={handleTextSubmit}>
+            <textarea 
+              placeholder="Enter text to get sentiment..." 
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows="5"
+              style={{ width: "100%" }}
+            />
+            <br />
+            <button type="submit">Analyze Text</button>
+          </form>
+          {textResult && (
+            <div className="result">
+              <h3>Analysis Result:</h3>
+              <p><strong>Sentiment:</strong> {textResult.label}</p>
+              <p><strong>Score:</strong> {textResult.score}</p>
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="section">
+          <h2>Analyze News Sentiment by Ticker</h2>
+          <form onSubmit={handleNewsSubmit}>
+            <input 
+              type="text" 
+              placeholder="Enter ticker or keywords" 
+              value={ticker}
+              onChange={(e) => setTicker(e.target.value)}
+              required
+            />
+            <br /><br />
+            <input 
+              type="date" 
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+            <br /><br />
+            <button type="submit">Analyze News</button>
+          </form>
+          {newsResult && (
+            <div className="result">
+              <h3>Overall Sentiment: {newsResult.overall_sentiment}</h3>
+              <p><strong>Total Score:</strong> {newsResult.total_score}</p>
+              <h4>Articles:</h4>
+              <ul>
+                {newsResult.articles && newsResult.articles.map((article, index) => (
+                  <li key={index}>
+                    <a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
+                    <br />
+                    <span>Sentiment: {article.sentiment} {article.score ? `(Score: ${article.score})` : ""}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

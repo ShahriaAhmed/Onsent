@@ -1,0 +1,113 @@
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  // For Direct Text Analysis
+  const [text, setText] = useState("");
+  const [textResult, setTextResult] = useState(null);
+
+  // For News Analysis
+  const [ticker, setTicker] = useState("");
+  const [date, setDate] = useState("");
+  const [newsResult, setNewsResult] = useState(null);
+
+  // Analyze direct text sentiment
+  const handleTextSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5000/analyze-text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      });
+      const data = await response.json();
+      setTextResult(data);
+    } catch (error) {
+      console.error("Error analyzing text:", error);
+    }
+  };
+
+  // Analyze news sentiment by ticker
+  const handleNewsSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`http://localhost:5000/analyze-news?ticker=${ticker}&date=${date}`);
+      const data = await response.json();
+      setNewsResult(data);
+    } catch (error) {
+      console.error("Error analyzing news:", error);
+    }
+  };
+
+  return (
+    <div className="container">
+      <h1>Sentiment Analyzer</h1>
+      
+      <section className="section">
+        <h2></h2>
+        <form onSubmit={handleTextSubmit}>
+          <textarea 
+            placeholder="Enter text to analyze sentiment..." 
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows="5"
+            style={{ width: "100%" }}
+          />
+          <br />
+          <button type="submit">Analyze Text</button>
+        </form>
+        {textResult && (
+          <div className="result">
+            <h3>Analysis Result:</h3>
+            <p><strong>Sentiment:</strong> {textResult.label}</p>
+            <p><strong>Score:</strong> {textResult.score}</p>
+          </div>
+        )}
+      </section>
+
+      <hr />
+
+      <section className="section">
+        <h2>News Sentiment Analysis by Ticker</h2>
+        <form onSubmit={handleNewsSubmit}>
+          <input 
+            type="text" 
+            placeholder="Enter ticker or keywords" 
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value)}
+            required
+          />
+          <br /><br />
+          <input 
+            type="date" 
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+          <br /><br />
+          <button type="submit">Analyze News</button>
+        </form>
+        {newsResult && (
+          <div className="result">
+            <h3>Overall Sentiment: {newsResult.overall_sentiment}</h3>
+            <p><strong>Total Score:</strong> {newsResult.total_score}</p>
+            <h4>Articles:</h4>
+            <ul>
+              {newsResult.articles && newsResult.articles.map((article, index) => (
+                <li key={index}>
+                  <a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
+                  <br />
+                  <span>Sentiment: {article.sentiment} {article.score ? `(Score: ${article.score})` : ""}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default App;

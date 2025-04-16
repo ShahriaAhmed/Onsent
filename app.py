@@ -5,13 +5,16 @@ from transformers import pipeline
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
-
+CORS(app, origins=[
+    "http://localhost:3000",                  # for local development
+    "https://onsent.vercel.app", # your Vercel preview domain
+    "https://www.onsent.xyz"              # your custom domain via GoDaddy
+])
 # Load FinBERT sentiment analysis model
 sentiment_pipeline = pipeline("text-classification", model="ProsusAI/finbert")
 
 # Load your NewsAPI key from a file named "API_KEY" (ensure it contains your key)
-API_KEY = '30152960558340f79575de8edbbe176a'
+
 
 def analyze_news_sentiment(keyword, date):
     """Fetches news articles and analyzes their sentiment."""

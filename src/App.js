@@ -32,7 +32,7 @@ function App() {
   const [newsResult, setNewsResult] = useState(null);
   const [lastWeekData, setLastWeekData] = useState(null);
 
-  const API_URL = 'http://localhost:5000'
+  const API_URL = 'https://onsent-2fuz.onrender.com'
 
 
   const handleTextSubmit = async (e) => {
